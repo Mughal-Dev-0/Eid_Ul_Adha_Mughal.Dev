@@ -1,0 +1,21 @@
+
+{
+  "name": "Eid-ul-Adha Greeting Experience",
+  "short_name": "Eid Greeting",
+  "description": "A personalized, interactive Eid-ul-Adha greeting with bakra interactions and downloadable cards",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ffd700",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"],
+  "lang": "en",
+  "scope": "/"
+}
