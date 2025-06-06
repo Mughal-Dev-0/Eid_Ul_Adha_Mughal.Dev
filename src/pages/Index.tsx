@@ -1,19 +1,39 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Download, Gift, MessageSquare, BookOpen, Heart } from "lucide-react";
+import { Star, Download, Gift, MessageSquare, BookOpen, Heart, Share2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState('welcome');
   const [userName, setUserName] = useState('');
+  const [friendName, setFriendName] = useState('');
+  const [friendWish, setFriendWish] = useState('');
+  const [generatedLink, setGeneratedLink] = useState('');
   const [showSpiritual, setShowSpiritual] = useState(false);
   const [bakraClicked, setBakraClicked] = useState(false);
   const [surpriseRevealed, setSurpriseRevealed] = useState(false);
   const [surpriseMessage, setSurpriseMessage] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const friendCanvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Check for URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const friendNameParam = urlParams.get('friend');
+    const wishParam = urlParams.get('wish');
+    const senderParam = urlParams.get('from');
+    
+    if (friendNameParam && wishParam && senderParam) {
+      setFriendName(friendNameParam);
+      setFriendWish(wishParam);
+      setUserName(senderParam);
+      setCurrentSection('friend-card-received');
+    }
+  }, []);
 
   const surpriseMessages = [
     "💸 Virtual Eidi for you!",
@@ -110,6 +130,104 @@ const Index = () => {
       });
     }
     toast.success(`Mehhh... Eid Mubarak, dear ${userName}!`);
+  };
+
+  const generateFriendCard = () => {
+    const canvas = friendCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = 800;
+    canvas.height = 600;
+
+    const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#16213e');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 800, 600);
+
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(20, 20, 760, 560);
+
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 48px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Eid Mubarak', 400, 120);
+
+    ctx.font = '32px serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`Dear ${friendName}`, 400, 180);
+
+    ctx.font = '24px serif';
+    ctx.fillStyle = '#ffeb3b';
+    const words = friendWish.split(' ');
+    let line = '';
+    let y = 280;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > 700 && n > 0) {
+        ctx.fillText(line, 400, y);
+        line = words[n] + ' ';
+        y += 35;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, 400, y);
+
+    ctx.fillStyle = '#ffd700';
+    ctx.font = '60px serif';
+    ctx.fillText('🌙', 150, 450);
+    ctx.fillText('🕌', 400, 450);
+    ctx.fillText('🐐', 650, 450);
+
+    ctx.font = '20px serif';
+    ctx.fillStyle = '#ffd700';
+    ctx.fillText(`✨ From ${userName} with ❤️`, 400, 520);
+    ctx.fillText('Created at Eid Greeting App by Zain Mughal', 400, 550);
+  };
+
+  const generateShareableLink = () => {
+    if (!friendName.trim() || !friendWish.trim()) {
+      toast.error('Please fill in both friend name and wish!');
+      return;
+    }
+
+    const baseUrl = window.location.origin;
+    const params = new URLSearchParams({
+      friend: friendName,
+      wish: friendWish,
+      from: userName
+    });
+    
+    const shareLink = `${baseUrl}?${params.toString()}`;
+    setGeneratedLink(shareLink);
+    toast.success('Shareable link generated!');
+  };
+
+  const copyLinkToClipboard = () => {
+    navigator.clipboard.writeText(generatedLink).then(() => {
+      toast.success('Link copied to clipboard! 🧡');
+    }).catch(() => {
+      toast.error('Failed to copy link');
+    });
+  };
+
+  const downloadFriendCard = () => {
+    generateFriendCard();
+    const canvas = friendCanvasRef.current;
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = `eid-greeting-for-${friendName}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    toast.success('Friend\'s Eid card downloaded successfully! 🧡');
   };
 
   const generateCard = () => {
@@ -255,6 +373,13 @@ const Index = () => {
               Eid Prayers & Guide
             </Button>
             <Button
+              onClick={() => setCurrentSection('friend-card')}
+              className="bg-orange-600 hover:bg-orange-700 text-white mr-4"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              Create Card for Friend 🧡
+            </Button>
+            <Button
               onClick={() => {
                 setShowSpiritual(true);
                 setCurrentSection('spiritual');
@@ -270,6 +395,176 @@ const Index = () => {
       <audio ref={audioRef} preload="none">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+LpymNdGjiS1vLNeSsFJXfH8N2QQAoUXrTp66hVFApGn+LpymNdGjoT2fL" type="audio/wav" />
       </audio>
+    </div>
+  );
+
+  const renderFriendCardSection = () => (
+    <div className="min-h-screen bg-gradient-to-b from-orange-900 to-red-900 p-4">
+      <div className="max-w-4xl mx-auto">
+        <Card className="bg-black/80 border-yellow-500 mb-6">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-3xl font-bold text-yellow-400 mb-4 animate-fade-in">
+              Create Eid Card for Your Friend 🧡
+            </h2>
+            <div className="text-4xl mb-6 animate-bounce-gentle">💌✨💌</div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white mb-4">Friend Details</h3>
+                <Input
+                  type="text"
+                  placeholder="Friend's name"
+                  value={friendName}
+                  onChange={(e) => setFriendName(e.target.value)}
+                  className="bg-slate-800 border-orange-500 text-white placeholder-gray-400"
+                />
+                <Textarea
+                  placeholder="Write your Eid wish for your friend..."
+                  value={friendWish}
+                  onChange={(e) => setFriendWish(e.target.value)}
+                  className="bg-slate-800 border-orange-500 text-white placeholder-gray-400 min-h-32"
+                />
+                
+                <div className="space-y-3">
+                  <Button
+                    onClick={generateShareableLink}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Generate Shareable Link
+                  </Button>
+                  
+                  {generatedLink && (
+                    <div className="bg-orange-800/50 p-4 rounded-lg border border-orange-500/30 animate-fade-in">
+                      <p className="text-sm text-orange-200 mb-2">Share this link with your friend:</p>
+                      <div className="flex gap-2">
+                        <Input
+                          value={generatedLink}
+                          readOnly
+                          className="bg-slate-700 border-orange-400 text-white text-xs"
+                        />
+                        <Button
+                          onClick={copyLinkToClipboard}
+                          size="sm"
+                          className="bg-orange-600 hover:bg-orange-700 text-white"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white mb-4">Card Preview</h3>
+                <div className="bg-black/50 p-4 rounded-lg border border-orange-500/30">
+                  <canvas
+                    ref={friendCanvasRef}
+                    className="border border-orange-500 rounded-lg max-w-full"
+                    style={{ maxHeight: '300px' }}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Button
+                    onClick={generateFriendCard}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Generate Card Preview
+                  </Button>
+                  <Button
+                    onClick={downloadFriendCard}
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Friend's Card
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <Button
+                onClick={() => setCurrentSection('spiritual')}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                Continue Journey
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const renderFriendCardReceivedSection = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-pink-900 to-rose-900 p-4">
+      <Card className="w-full max-w-4xl bg-black/80 border-yellow-500">
+        <CardContent className="p-8 text-center">
+          <h2 className="text-3xl font-bold text-yellow-400 mb-6 animate-fade-in">
+            🧡 Special Eid Greeting for You! 🧡
+          </h2>
+          
+          <div className="text-6xl mb-6 animate-bounce-gentle">🎁💌🎁</div>
+          
+          <div className="bg-gradient-to-r from-pink-800/50 to-rose-800/50 p-8 rounded-lg border border-yellow-500 mb-8 animate-scale-in">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Dear {friendName},
+            </h3>
+            <p className="text-lg text-yellow-200 leading-relaxed mb-4">
+              {friendWish}
+            </p>
+            <p className="text-yellow-400 font-bold">
+              With love from {userName} 🧡
+            </p>
+          </div>
+          
+          <div className="mb-6">
+            <canvas
+              ref={friendCanvasRef}
+              className="border border-yellow-500 rounded-lg max-w-full"
+              style={{ maxHeight: '400px' }}
+            />
+          </div>
+          
+          <div className="space-y-4">
+            <Button
+              onClick={generateFriendCard}
+              className="bg-pink-600 hover:bg-pink-700 text-white mr-4"
+            >
+              Generate Card
+            </Button>
+            <Button
+              onClick={downloadFriendCard}
+              className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download This Card
+            </Button>
+          </div>
+          
+          <div className="mt-8 pt-8 border-t border-yellow-500">
+            <p className="text-yellow-400 text-lg mb-4">
+              ✨ Create your own Eid greeting experience! ✨
+            </p>
+            <Button
+              onClick={() => {
+                // Clear URL parameters and restart the experience
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setCurrentSection('welcome');
+                setUserName('');
+                setFriendName('');
+                setFriendWish('');
+                setGeneratedLink('');
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Create Your Own Greeting
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
@@ -636,7 +931,10 @@ const Index = () => {
     if (currentSection === 'card' && canvasRef.current) {
       setTimeout(generateCard, 100);
     }
-  }, [currentSection, userName]);
+    if (currentSection === 'friend-card-received' && friendCanvasRef.current) {
+      setTimeout(generateFriendCard, 100);
+    }
+  }, [currentSection, userName, friendName, friendWish]);
 
   return (
     <div className="min-h-screen">
@@ -645,6 +943,8 @@ const Index = () => {
       {currentSection === 'prayers' && renderPrayersSection()}
       {currentSection === 'prayers-list' && renderPrayersListSection()}
       {currentSection === 'prayer-guide' && renderPrayerGuideSection()}
+      {currentSection === 'friend-card' && renderFriendCardSection()}
+      {currentSection === 'friend-card-received' && renderFriendCardReceivedSection()}
       {currentSection === 'spiritual' && renderSpiritualSection()}
       {currentSection === 'card' && renderCardSection()}
       {currentSection === 'surprise' && renderSurpriseSection()}
