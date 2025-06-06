@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Arabic and Urdu fonts */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap');
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
@@ -95,6 +98,17 @@
   }
 }
 
+/* Arabic and Urdu Font Definitions */
+.font-arabic {
+  font-family: 'Amiri', 'Arabic UI Text', 'Geeza Pro', 'Traditional Arabic', serif;
+  direction: rtl;
+}
+
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Al Qalam Taj Nastaleeq', serif;
+  direction: rtl;
+}
+
 /* Custom animations for Eid app */
 @keyframes fade-in {
   from {
@@ -138,6 +152,35 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.6);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.6s ease-out;
 }
@@ -152,6 +195,38 @@
 
 .animate-twinkle {
   animation: twinkle 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out;
+}
+
+/* Prayer card special animations */
+.prayer-card {
+  transition: all 0.3s ease;
+}
+
+.prayer-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+}
+
+/* Arabic text animations */
+.arabic-text {
+  animation: fade-in 1s ease-out;
+}
+
+/* Urdu text animations */
+.urdu-text {
+  animation: slide-up 0.8s ease-out;
 }
 
 /* Custom scrollbar */
@@ -193,6 +268,16 @@
   .text-6xl {
     font-size: 3rem;
   }
+  
+  .font-arabic {
+    font-size: 1.1em;
+    line-height: 1.8;
+  }
+  
+  .font-urdu {
+    font-size: 1.05em;
+    line-height: 1.7;
+  }
 }
 
 /* Print styles for card generation */
@@ -226,4 +311,50 @@ input:focus {
   50% { content: '..'; }
   75% { content: '...'; }
   100% { content: ''; }
+}
+
+/* Enhanced prayer section styling */
+.prayer-section {
+  background: linear-gradient(45deg, rgba(79, 70, 229, 0.1), rgba(147, 51, 234, 0.1));
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Prayer text styling */
+.arabic-verse {
+  font-size: 1.5rem;
+  line-height: 2.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.urdu-translation {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Special Islamic calligraphy effects */
+.islamic-calligraphy {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+}
+
+/* Gradient text for headings */
+.gradient-text {
+  background: linear-gradient(45deg, #ffd700, #ffed4e, #fbbf24);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
